@@ -1845,12 +1845,13 @@ CA1arealineanes <- CA1quantiles %>%
   scale_color_manual(name="", values=c("dodgerblue3","indianred1"),
                      labels=c("Control","Anesthesia"))
 
-ann_text <- data.frame(quantile = 19,wt = 1.25,lab = "**",
-                       sex = factor("Female",levels = c("Female", "Male")))
+inset_ann_text <- data.frame(quantile = c(19, 20, 20), mean = c(1.15, 1.9, 1.9),
+                             lab = c("**", "***", "*"), sex = c("Female", "Female", "Male")) %>%
+                       mutate(sex = factor(sex), quantile = as.integer(quantile))
 
 inset <- CA1quantiles %>% 
   group_by(group,sex,quantile) %>% 
-  summarize(mean = mean(area), sd=sd(area)) %>% ungroup () %>%
+  summarize(mean = mean(area), sd=sd(area)) %>% ungroup() %>%
   filter(quantile > 17) %>% 
   mutate(sex = factor(sex, labels = c("Female", "Male"))) %>%
   ggplot(aes(x=quantile,y=mean,
@@ -1859,8 +1860,7 @@ inset <- CA1quantiles %>%
   xlab("Quantile") + ylab(bquote('Synapse area,'~µm^2)) +
   geom_point(size=3) + geom_line() + 
   geom_linerange(aes(ymin=mean-sd,ymax=mean+sd)) +
-  #  geom_text(data = ann_text,label = "**") +
-  scale_x_continuous(breaks=1:20, labels=1:20) + 
+  scale_x_continuous(breaks=1:20, labels=1:20, expand = expansion(mult = c(0.1, 0.15))) + 
   theme_anes +  
   scale_color_manual(name = "", values=c("dodgerblue3","indianred1", "dodgerblue4", "indianred3"),
                      labels=c("Control Female ","Anesthesia Female","Control Male","Anesthesia Male")) + 
@@ -1868,6 +1868,7 @@ inset <- CA1quantiles %>%
                      labels=c("Control Female ","Anesthesia Female","Control Male","Anesthesia Male")) +
   labs(color = "", shape = "") + guides(color = "none", shape = "none") +
   facet_wrap(sex~.) +
+  geom_text(data = inset_ann_text, aes(shape = NULL, label = lab), color = "black", size = 6) +
   theme(strip.text.x = element_text(size = 10), 
         strip.placement = "outside", 
         strip.background = element_rect(color = NA),
